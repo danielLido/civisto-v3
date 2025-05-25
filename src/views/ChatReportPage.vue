@@ -150,7 +150,7 @@
             v-model="userInput"
             auto-grow="true"
             rows="1"
-            @keyup.enter="sendMessage"
+            @keydown.enter.prevent="sendMessage"
             ref="messageInput"
           ></ion-textarea>
         </div>
