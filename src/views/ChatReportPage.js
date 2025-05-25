@@ -1,4 +1,4 @@
-import { defineComponent, ref, reactive, onMounted, nextTick, computed } from 'vue';
+import { defineComponent, ref, reactive, onMounted, nextTick, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { 
   IonPage, 
@@ -27,7 +27,7 @@ import { useAuth } from '@/composables/useAuth';
 
 export default function useChatReportPage() {
   const router = useRouter();
-  const { getCurrentPosition, getAddressFromCoordinates } = useGeolocation();
+  const { getCurrentPosition, getAddressFromCoordinates, getDetailedAddress, getFullLocationData } = useGeolocation();
   const { getWeatherForLocation } = useWeather();
   const { user } = useAuth();
 
@@ -45,7 +45,7 @@ export default function useChatReportPage() {
 
   // Report data structure matching the API format
   const reportData = reactive({
-    user_id: '',
+    user_id: '123e4567-e89b-12d3-a456-426614174000', // Default ID, will be updated if user is available
     geo: {
       lat: 0,
       lng: 0,
@@ -88,6 +88,46 @@ export default function useChatReportPage() {
     return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}`;
   });
 
+  // Load chat history from localStorage
+  const loadChatHistory = () => {
+    try {
+      const savedData = localStorage.getItem('civisto-chat-history');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        if (parsedData.messages && Array.isArray(parsedData.messages)) {
+          messages.value = parsedData.messages;
+        }
+        if (parsedData.reportData) {
+          // Only restore comments and categories to maintain fresh geo and weather data
+          if (parsedData.reportData.comments) {
+            reportData.comments = parsedData.reportData.comments;
+          }
+          if (parsedData.reportData.categories) {
+            reportData.categories = parsedData.reportData.categories;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load chat history:', error);
+    }
+  };
+
+  // Save chat history to localStorage
+  const saveChatHistory = () => {
+    try {
+      const dataToSave = {
+        messages: messages.value,
+        reportData: {
+          comments: reportData.comments,
+          categories: reportData.categories
+        }
+      };
+      localStorage.setItem('civisto-chat-history', JSON.stringify(dataToSave));
+    } catch (error) {
+      console.error('Failed to save chat history:', error);
+    }
+  };
+
   // Initialize location and weather data
   const initializeData = async () => {
     try {
@@ -96,33 +136,22 @@ export default function useChatReportPage() {
         reportData.user_id = user.value.id;
       }
 
-      // Get current location
-      const position = await getCurrentPosition();
-      reportData.geo.lat = position.latitude;
-      reportData.geo.lng = position.longitude;
-      reportData.coordinates = `${position.latitude.toFixed(4)}°, ${position.longitude.toFixed(4)}°`;
-
-      // Get address
-      try {
-        const address = await getAddressFromCoordinates(position.latitude, position.longitude);
-        reportData.location = address;
-        
-        // Parse address for city and street (simplified)
-        const parts = address.split(',');
-        if (parts.length >= 2) {
-          reportData.geo.street = parts[0].trim();
-          reportData.geo.city = parts[1].trim();
-        } else {
-          reportData.geo.street = address;
-          reportData.geo.city = 'Unknown';
-        }
-      } catch (error) {
-        console.warn('Failed to get address:', error);
-      }
+      // Get detailed location data including city and street
+      const fullLocation = await getFullLocationData();
+      
+      // Update geo data
+      reportData.geo.lat = fullLocation.latitude;
+      reportData.geo.lng = fullLocation.longitude;
+      reportData.geo.city = fullLocation.city || 'Unknown';
+      reportData.geo.street = fullLocation.street || 'Unknown';
+      
+      // Update display values
+      reportData.coordinates = `${fullLocation.latitude.toFixed(4)}°, ${fullLocation.longitude.toFixed(4)}°`;
+      reportData.location = fullLocation.address || `${reportData.geo.street}, ${reportData.geo.city}`;
 
       // Get weather data
       try {
-        const weather = await getWeatherForLocation(position.latitude, position.longitude);
+        const weather = await getWeatherForLocation(fullLocation.latitude, fullLocation.longitude);
         reportData.weather = {
           temperature: weather.temperature,
           humidity_percentage: weather.humidity_percentage,
@@ -133,21 +162,58 @@ export default function useChatReportPage() {
       }
     } catch (error) {
       console.error('Failed to initialize data:', error);
-      // Do not use mock or fallback location. Keep default values and optionally show an error message.
-      // Optionally, you can set a flag or message to inform the user that geolocation failed.
+      // Attempt to get basic position if detailed location fails
+      try {
+        const position = await getCurrentPosition();
+        reportData.geo.lat = position.latitude;
+        reportData.geo.lng = position.longitude;
+        reportData.coordinates = `${position.latitude.toFixed(4)}°, ${position.longitude.toFixed(4)}°`;
+      } catch (fallbackError) {
+        console.error('Fallback geolocation also failed:', fallbackError);
+      }
     }
+  };
+
+  // Helper function to ensure data format matches the required API format
+  const formatDataForServer = (data) => {
+    // Create a deep copy to avoid modifying the original
+    const formattedData = JSON.parse(JSON.stringify(data));
+    
+    // Ensure all required fields are present and correctly formatted
+    return {
+      user_id: formattedData.user_id || '123e4567-e89b-12d3-a456-426614174000',
+      geo: {
+        lat: formattedData.geo.lat || 0,
+        lng: formattedData.geo.lng || 0,
+        city: formattedData.geo.city || 'Unknown',
+        street: formattedData.geo.street || 'Unknown'
+      },
+      weather: {
+        temperature: formattedData.weather.temperature || 0,
+        humidity_percentage: formattedData.weather.humidity_percentage || 0,
+        wind_speed: formattedData.weather.wind_speed || 0
+      },
+      categories: formattedData.categories || [],
+      comments: formattedData.comments || []
+    };
   };
 
   // Send message to AI API
   const sendToAI = async (data) => {
     try {
+      // Format the data to match the required API format
+      const requestData = formatDataForServer(data);
+      
+      // Log the data being sent to the server (for debugging)
+      console.log('#example-data-to-server:', JSON.stringify(requestData, null, 2));
+      
       const response = await fetch('https://eajowgxcuedziatbkgba.supabase.co/functions/v1/comment-ai', {
         method: 'POST',
         headers: {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVham93Z3hjdWVkemlhdGJrZ2JhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczODU2MjAsImV4cCI6MjA2Mjk2MTYyMH0.gApfUlSzt3BlI-l2XdnAsrILZbGIDK00qzVJh3TsbIo',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(requestData)
       });
 
       if (!response.ok) {
@@ -155,14 +221,22 @@ export default function useChatReportPage() {
       }
 
       const result = await response.json();
+      
+      // Log the response from the server (for debugging)
+      console.log('#response-data-from-server:', JSON.stringify(result, null, 2));
+      
       return result;
     } catch (error) {
       console.error('AI API call failed:', error);
       // Return mock response for demo
-      return {
-        comment: `Thank you for reporting this issue. Based on the information provided, this appears to be a ${data.categories[0] || 'general'} issue that needs attention.`,
+      const mockResponse = {
+        comment: `Thank you for reporting this issue. Based on the information provided, this appears to be a ${data.categories[0] || 'general'} issue in ${data.geo.street}, ${data.geo.city} with current temperature of ${data.weather.temperature}°C.`,
         probability: Math.floor(Math.random() * 30) + 70 // 70-100%
       };
+      
+      console.log('#response-data-from-server (mock):', JSON.stringify(mockResponse, null, 2));
+      
+      return mockResponse;
     }
   };
 
@@ -176,6 +250,7 @@ export default function useChatReportPage() {
     
     nextTick(() => {
       scrollToBottom();
+      saveChatHistory(); // Save after adding a message
     });
   };
 
@@ -188,6 +263,7 @@ export default function useChatReportPage() {
     };
     
     reportData.comments.push(comment);
+    saveChatHistory(); // Save after adding a comment
     return comment;
   };
 
@@ -216,8 +292,12 @@ export default function useChatReportPage() {
         // Add AI response to chat and report
         setTimeout(() => {
           isTyping.value = false;
-          addMessage(aiResponse.comment, 'assistant');
-          addComment(aiResponse.comment, 'ai');
+          
+          // Use the comment from the server response
+          const responseText = aiResponse.comment || "Thank you for your report. We'll look into this issue.";
+          
+          addMessage(responseText, 'assistant');
+          addComment(responseText, 'ai');
 
           // Check if we should show completion
           if (reportData.comments.length >= 3) {
@@ -300,6 +380,12 @@ export default function useChatReportPage() {
     reportData.comments = [];
     reportData.hasPhotos = false;
     userInput.value = '';
+    
+    // Clear localStorage
+    localStorage.removeItem('civisto-chat-history');
+    
+    // Re-initialize location and weather data
+    initializeData();
   };
 
   // Go back
@@ -324,9 +410,32 @@ export default function useChatReportPage() {
     // Handle map interactions if needed
   };
 
+  // Watch for changes in location and update weather
+  watch(
+    () => [reportData.geo.lat, reportData.geo.lng],
+    async ([newLat, newLng], [oldLat, oldLng]) => {
+      if (
+        newLat !== oldLat || 
+        newLng !== oldLng
+      ) {
+        try {
+          const weather = await getWeatherForLocation(newLat, newLng);
+          reportData.weather = {
+            temperature: weather.temperature,
+            humidity_percentage: weather.humidity_percentage,
+            wind_speed: weather.wind_speed
+          };
+        } catch (error) {
+          console.warn('Failed to update weather after location change:', error);
+        }
+      }
+    }
+  );
+
   // Initialize on mount
   onMounted(async () => {
-    await initializeData();
+    loadChatHistory(); // Load chat history first
+    await initializeData(); // Then get fresh location and weather data
   });
 
   // Return all reactive state and methods
