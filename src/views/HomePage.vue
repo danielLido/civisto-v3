@@ -6,681 +6,1071 @@
       </ion-toolbar>
     </ion-header>
 
-    <!-- Background with subtle pattern -->
+    <!-- Dynamic Background -->
     <div class="background-pattern"></div>
 
     <ion-content>
       <div class="main-content">
-        <!-- Hero Section -->
+        <!-- Bold Hero Section -->
         <div class="hero-section">
           <div class="hero-card">
-            <!-- Abstract pattern elements -->
-            <div class="pattern-circle-1"></div>
-            <div class="pattern-circle-2"></div>
+            <!-- Geometric Background Elements -->
+            <div class="geo-shape shape-1"></div>
+            <div class="geo-shape shape-2"></div>
+            <div class="geo-shape shape-3"></div>
             
-            <h1>Make your community better today</h1>
-            <p>Report issues in your neighborhood to improve your local environment.</p>
+            <div class="hero-content">
+              <div class="hero-badge">🇸🇪 Rapportera i din kommun</div>
+              <h1>Rapportera.<br>Påverka.<br><span class="highlight">Förbättra.</span></h1>
+              <p>En digital plattform som förenar medborgare och kommuner för en bättre framtid</p>
+              
+              <!-- Action Buttons -->
+              <div class="action-buttons">
+                <ion-button class="btn-primary" expand="block" @click="reportIssue">
+                  <ion-icon :icon="addOutline" slot="start"></ion-icon>
+                  <span>Skapa rapport</span>
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works Slider -->
+        <div class="how-it-works-section">
+          <div class="section-header-modern">
+            <div class="section-badge">Hur det fungerar</div>
+            <h2>Tre enkla steg</h2>
+            <p>Från problem till lösning på några minuter</p>
+          </div>
+          
+          <div class="steps-slider-container">
+            <div class="steps-slider" :style="{ transform: `translateX(${-currentStep * 100}%)` }">
+              <div class="step-slide" v-for="(step, index) in steps" :key="index">
+                <div class="step-illustration">
+                  <div class="step-icon-large" :class="step.iconClass">
+                    <ion-icon :icon="step.icon"></ion-icon>
+                  </div>
+                </div>
+                
+                <div class="step-content-modern">
+                  <div class="step-number-badge">{{ index + 1 }}</div>
+                  <h3>{{ step.title }}</h3>
+                  <p>{{ step.description }}</p>
+                  <div class="step-features">
+                    <div class="feature-item" v-for="feature in step.features" :key="feature">
+                      <ion-icon :icon="checkmarkCircleOutline"></ion-icon>
+                      <span>{{ feature }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             
-            <!-- Action Button -->
-            <div class="action-buttons">
-              <ion-button class="btn-primary" expand="block" @click="reportIssue">
+            <!-- Slider Controls -->
+            <div class="slider-controls">
+              <button class="slider-arrow prev" @click="prevStep" :disabled="currentStep === 0">
+                <ion-icon :icon="chevronBackOutline"></ion-icon>
+              </button>
+              <div class="slider-dots">
+                <div 
+                  v-for="(step, index) in steps" 
+                  :key="index"
+                  class="slider-dot"
+                  :class="{ active: index === currentStep }"
+                  @click="currentStep = index"
+                ></div>
+              </div>
+              <button class="slider-arrow next" @click="nextStep" :disabled="currentStep === steps.length - 1">
+                <ion-icon :icon="chevronForwardOutline"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Your Reports Section -->
+        <div class="reports-section">
+          <div class="section-header-modern">
+            <div class="section-badge">Dina rapporter</div>
+            <h2>Senaste aktiviteter</h2>
+            <ion-button fill="clear" class="view-all-modern" @click="viewAllReports">
+              <span>Visa alla</span>
+              <ion-icon :icon="chevronForwardOutline" slot="end"></ion-icon>
+            </ion-button>
+          </div>
+          
+          <div class="reports-grid">
+            <div class="report-card" v-for="(report, index) in recentReports" :key="index" @click="openReport(report)">
+              <div class="report-header">
+                <div class="report-icon" :class="report.iconClass">
+                  <ion-icon :icon="report.icon"></ion-icon>
+                </div>
+                <div class="report-status" :class="report.statusClass">
+                  <div class="status-dot"></div>
+                  <span>{{ report.status }}</span>
+                </div>
+              </div>
+              
+              <div class="report-body">
+                <h3>{{ report.title }}</h3>
+                <div class="report-location">
+                  <ion-icon :icon="locationOutline"></ion-icon>
+                  <span>{{ report.location }}</span>
+                </div>
+                <div class="report-meta">
+                  <div class="report-time">
+                    <ion-icon :icon="timeOutline"></ion-icon>
+                    <span>{{ report.time }}</span>
+                  </div>
+                  <div class="report-id">#{{ report.id }}</div>
+                </div>
+              </div>
+              
+              <div class="report-footer">
+                <button class="report-action">
+                  <span>Visa detaljer</span>
+                  <ion-icon :icon="arrowForwardOutline"></ion-icon>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="empty-state" v-if="recentReports.length === 0">
+              <div class="empty-icon">
+                <ion-icon :icon="documentTextOutline"></ion-icon>
+              </div>
+              <h3>Inga rapporter ännu</h3>
+              <p>Skapa din första rapport för att göra skillnad i din kommun</p>
+              <ion-button class="btn-secondary" @click="reportIssue">
                 <ion-icon :icon="addOutline" slot="start"></ion-icon>
-                <span>Report an Issue</span>
+                <span>Skapa rapport</span>
               </ion-button>
             </div>
           </div>
         </div>
 
-        <!-- Impact Stats Section -->
-        <div class="stats-section">
-          <h2>Your Community Impact</h2>
-          
-          <ion-card class="stats-card">
-            <ion-card-content>
-              <div class="stats-grid">
-                <div class="stat-item">
-                  <div class="stat-circle green">
-                    <div class="stat-number">12</div>
-                  </div>
-                  <div class="stat-label">Reports</div>
-                </div>
-                
-                <div class="stat-item">
-                  <div class="stat-circle blue">
-                    <div class="stat-number">8</div>
-                  </div>
-                  <div class="stat-label">Solved</div>
-                </div>
-                
-                <div class="stat-item">
-                  <div class="stat-circle purple">
-                    <div class="stat-number">1.2K</div>
-                  </div>
-                  <div class="stat-label">Points</div>
-                </div>
-              </div>
-              
-              <!-- Progress Bar -->
-              <div class="progress-container">
-                <div class="progress-header">
-                  <span>Progress to Silver</span>
-                  <span>1,250 / 2,000</span>
-                </div>
-                <ion-progress-bar value="0.625" class="progress-bar"></ion-progress-bar>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </div>
-
-        <!-- Recent Reports -->
-        <div class="reports-section">
-          <div class="section-header">
-            <h2>Recent Reports</h2>
-            <ion-button fill="clear" class="view-all" @click="viewAllReports">
-              View All
-              <ion-icon :icon="chevronForwardOutline" slot="end"></ion-icon>
-            </ion-button>
-          </div>
-          
-          <!-- Report Cards -->
-          <div class="report-cards">
-            <ion-card class="report-card" v-for="(report, index) in recentReports" :key="index" @click="openReport(report)">
-              <ion-card-content>
-                <div class="report-content">
-                  <div class="report-image" :class="report.imageClass">
-                    <ion-icon :icon="report.icon" size="large"></ion-icon>
-                  </div>
-                  <div class="report-details">
-                    <div class="report-status-row">
-                      <ion-badge class="status-badge" :class="report.statusClass">{{ report.status }}</ion-badge>
-                      <span class="report-time">{{ report.time }}</span>
-                    </div>
-                    <h3>{{ report.title }}</h3>
-                    <p>{{ report.location }}</p>
-                  </div>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </div>
-        </div>
-
-        <!-- Trending Issues -->
-        <div class="trending-section">
-          <h2>Trending in Your Area</h2>
-          <div class="trending-cards">
-            <ion-card class="trending-card" v-for="(trend, index) in trendingIssues" :key="index" @click="openTrend(trend)">
-              <ion-card-content>
-                <div class="trending-content">
-                  <div class="icon-container" :class="trend.iconClass">
-                    <ion-icon :icon="trend.icon" size="small"></ion-icon>
-                  </div>
-                  <div class="trending-details">
-                    <h3>{{ trend.title }}</h3>
-                    <p>{{ trend.count }}</p>
-                  </div>
-                  <ion-icon :icon="chevronForwardOutline" class="arrow-icon"></ion-icon>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </div>
-        </div>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script setup>
-import useHomePage from './HomePage.js';
-useHomePage();
+import useChatReportPage from './HomePage.js';
 </script>
 
-<style scoped>
-/* Base Variables */
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Enhanced Variables */
 :root {
   --ion-color-primary: #22c55e;
   --ion-color-primary-rgb: 34, 197, 94;
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
   --ion-color-primary-shade: #16a34a;
-  --ion-color-primary-tint: #3eb058;
+  --ion-color-primary-tint: #10b981;
   
-  --ion-color-secondary: #16a34a;
-  --ion-color-secondary-rgb: 22, 163, 74;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --civic-blue: #3b82f6;
+  --civic-green: #22c55e;
+  --civic-yellow: #d97706;
+  --civic-red: #dc2626;
+  --civic-purple: #7c3aed;
   
-  --ion-background-color: #f9fafb;
-  --ion-text-color: #111827;
+  --surface: #ffffff;
+  --surface-elevated: #f8fafc;
+  --surface-variant: #f1f5f9;
+  --on-surface: #0f172a;
+  --on-surface-variant: #475569;
+  --outline: #cbd5e1;
+  --outline-variant: #e2e8f0;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  --gradient-primary: linear-gradient(135deg, var(--civic-green), var(--ion-color-primary-shade));
+  --gradient-success: linear-gradient(135deg, var(--civic-green), #10b981);
+  --gradient-warning: linear-gradient(135deg, var(--civic-yellow), #f59e0b);
 }
 
-/* Background Pattern */
+/* Global Overrides */
+ion-content {
+  --background: var(--surface-elevated);
+}
+
+ion-toolbar {
+  --background: var(--surface);
+  --border-color: var(--outline-variant);
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  --padding-start: 24px;
+  --padding-end: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Dynamic Background */
 .background-pattern {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, #e8f7efcc, #e8f7ef00);
-  background-image: radial-gradient(circle, #22c55e 1px, transparent 1px);
-  background-size: 24px 24px;
-  opacity: 0.3;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.04) 0%, transparent 50%),
+    linear-gradient(135deg, #f8fffe 0%, #f0fdf4 30%, #ecfdf5 70%, #fafafa 100%);
 }
 
-/* Logo */
+/* Header */
 .logo {
   font-family: 'Bagel Fat One', cursive;
-  font-weight: bold;
-  font-size: 24px;
-  color: #22c55e;
-  padding-left: 8px;
-  letter-spacing: 1px;
+  font-weight: 400;
+  font-size: 28px;
+  color: var(--civic-green);
+  letter-spacing: -0.02em;
+  margin-left: 16px;
 }
-
-/* Removed header icons styles */
 
 /* Main Content */
 .main-content {
   position: relative;
   z-index: 10;
-  padding: 16px;
-  padding-bottom: 80px;
+  padding: 0 24px 100px;
 }
 
-@media (min-width: 768px) {
-  .main-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    padding: 32px;
-  }
-  
-  .hero-section {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (min-width: 1024px) {
-  .main-content {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-  
-  .stats-section {
-    grid-column: span 1;
-  }
-  
-  .reports-section {
-    grid-column: span 2;
-  }
-  
-  .trending-section {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Hero Section */
+/* Bold Hero Section - Edge to Edge */
 .hero-section {
-  padding-bottom: 24px;
   position: relative;
+  overflow: hidden;
+  margin-bottom: 48px;
+  margin-top: -20px;
+  margin-left: -24px;
+  margin-right: -24px;
 }
 
 .hero-card {
-  background: linear-gradient(to right, #22c55e, #16a34a);
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.15);
-  padding: 24px;
-  overflow: hidden;
+  background: var(--gradient-primary);
+  border-radius: 0 0 24px 24px;
+  box-shadow: var(--shadow-xl);
+  padding: 68px 32px 48px;
   position: relative;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
 }
 
-.pattern-circle-1 {
+/* Geometric Shapes */
+.geo-shape {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 64px;
-  height: 64px;
   border-radius: 50%;
-  background-color: white;
-  opacity: 0.1;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
 }
 
-.pattern-circle-2 {
-  position: absolute;
-  bottom: 20px;
-  right: 48px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: white;
-  opacity: 0.1;
+.shape-1 {
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  right: -50px;
+  animation: float 8s ease-in-out infinite;
+}
+
+.shape-2 {
+  width: 120px;
+  height: 120px;
+  bottom: -30px;
+  right: 100px;
+  animation: float 12s ease-in-out infinite reverse;
+}
+
+.shape-3 {
+  width: 80px;
+  height: 80px;
+  top: 100px;
+  left: -20px;
+  animation: pulse 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.1); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  text-align: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--civic-green);
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .hero-card h1 {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 40px;
+  font-weight: 900;
   color: white;
-  margin-bottom: 12px;
-  position: relative;
-  z-index: 10;
-  max-width: 300px;
+  margin-bottom: 20px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.highlight {
+  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
 }
 
 .hero-card p {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 24px;
-  font-weight: 400;
-  position: relative;
-  z-index: 10;
-  max-width: 320px;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 32px;
+  font-weight: 500;
   line-height: 1.5;
 }
 
 .action-buttons {
   display: flex;
-  gap: 12px;
-  position: relative;
-  z-index: 10;
-  width: 100%;
+  justify-content: center;
+  margin-bottom: 0;
 }
 
-/* Override Ionic button styles for action buttons */
-.action-buttons ion-button {
-  margin: 0;
-  height: 46px;
-  flex: 1;
-}
-
+/* Enhanced Buttons */
 .btn-primary {
-  --background: white;
-  --color: #22c55e;
+  --background: rgba(255, 255, 255, 0.95);
+  --color: var(--civic-green);
+  --border-radius: 16px;
+  --box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  --padding-start: 40px;
+  --padding-end: 40px;
+  --padding-top: 16px;
+  --padding-bottom: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0;
+  min-width: 200px;
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  --background: var(--civic-green);
+  --color: white;
   --border-radius: 12px;
-  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --background-activated: #f0fdf4;
-  --background-focused: #f0fdf4;
-  --background-hover: #f0fdf4;
+  --padding-start: 24px;
+  --padding-end: 24px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
   font-weight: 600;
   font-size: 15px;
-  border: 1px solid #dcfce7;
 }
 
-/* Removed btn-secondary style */
-
-/* Stats Section */
-.stats-section {
-  padding-top: 24px;
-  padding-bottom: 24px;
+/* Modern Section Headers */
+.section-header-modern {
+  text-align: center;
+  margin-bottom: 48px;
+  position: relative;
 }
 
-.stats-section h2 {
-  font-size: 20px;
+.section-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--civic-green), #10b981);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 700;
-  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-.stats-card {
-  --background: white;
-  --border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+.section-header-modern h2 {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--on-surface);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.section-header-modern p {
+  font-size: 16px;
+  color: var(--on-surface-variant);
   margin: 0;
+  font-weight: 500;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+.view-all-modern {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  --color: var(--civic-green);
+  font-weight: 600;
+  font-size: 15px;
 }
 
-.stat-item {
+/* How It Works - Modern Slider Design */
+.how-it-works-section {
+  padding: 64px 24px;
+  background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+}
+
+.steps-slider-container {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.steps-slider {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.step-slide {
+  flex: 0 0 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 48px 32px;
+  text-align: center;
+  position: relative;
 }
 
-.stat-circle {
-  width: 48px;
-  height: 48px;
+.step-illustration {
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.step-icon-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 48px;
+  margin: 0 auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-icon-large::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  background: inherit;
+  opacity: 0.1;
+  transform: scale(1.5);
+  transition: transform 0.3s ease;
+}
+
+.step-icon-large:hover::before {
+  transform: scale(1.2);
+}
+
+.step-icon-large:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.step-icon-large.blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.step-icon-large.orange {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.step-icon-large.green {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.step-content-modern {
+  max-width: 500px;
+  position: relative;
+}
+
+.step-number-badge {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+  z-index: 10;
 }
 
-.stat-circle.green {
-  background-color: #f0fdf4;
-}
-
-.stat-circle.green .stat-number {
-  color: #16a34a;
-}
-
-.stat-circle.blue {
-  background-color: #eff6ff;
-}
-
-.stat-circle.blue .stat-number {
-  color: #2563eb;
-}
-
-.stat-circle.purple {
-  background-color: #faf5ff;
-}
-
-.stat-circle.purple .stat-number {
-  color: #9333ea;
-}
-
-.stat-number {
+.step-content-modern h3 {
+  font-size: 28px;
   font-weight: 700;
-  font-size: 16px;
+  color: #0f172a;
+  margin: 0 0 16px 0;
+  letter-spacing: -0.01em;
 }
 
-.stat-label {
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: 500;
+.step-content-modern p {
+  font-size: 18px;
+  color: #64748b;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
 }
 
-.progress-container {
-  padding: 0 4px;
-}
-
-.progress-header {
+.step-features {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 12px;
   align-items: center;
-  margin-bottom: 8px;
 }
 
-.progress-header span {
-  font-size: 14px;
-  color: #6b7280;
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #475569;
+  background: rgba(34, 197, 94, 0.05);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(34, 197, 94, 0.1);
 }
 
-.progress-header span:last-child {
-  font-weight: 600;
-  color: #374151;
+.feature-item ion-icon {
+  color: #22c55e;
+  font-size: 18px;
 }
 
-.progress-bar {
-  height: 8px;
-  --buffer-background: #f3f4f6;
-  --progress-background: linear-gradient(to right, #22c55e, #3b82f6);
+/* Slider Controls */
+.slider-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 32px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.slider-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #22c55e;
+  font-size: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slider-arrow:hover:not(:disabled) {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.2);
+  transform: translateY(-2px);
+}
+
+.slider-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slider-dots {
+  display: flex;
+  gap: 12px;
+}
+
+.slider-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+  width: 32px;
+  border-radius: 6px;
+  background: #22c55e;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
 }
 
 /* Reports Section */
 .reports-section {
-  padding-top: 24px;
-  padding-bottom: 24px;
+  padding: 48px 24px;
 }
 
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.section-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.view-all {
-  --color: #16a34a;
-  --box-shadow: none;
-  --background: transparent;
-  --padding-start: 8px;
-  --padding-end: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  height: auto;
-  margin: 0;
-}
-
-.report-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
 }
 
 .report-card {
-  --background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin: 0;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--outline-variant);
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
 }
 
 .report-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 }
 
-.report-card ion-card-content {
-  padding: 16px;
-}
-
-.report-content {
+.report-header {
   display: flex;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-.report-image {
-  width: 60px;
-  height: 60px;
-  background-color: #f3f4f6;
+.report-icon {
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4b5563;
+  color: white;
+  font-size: 24px;
 }
 
-.report-image.electricity {
-  background-color: #fef9c3;
-  color: #ca8a04;
+.report-icon.electricity { 
+  background: linear-gradient(135deg, var(--civic-yellow), #f59e0b);
+}
+.report-icon.retail { 
+  background: linear-gradient(135deg, var(--civic-green), #10b981);
+}
+.report-icon.maintenance { 
+  background: linear-gradient(135deg, var(--civic-blue), #2563eb);
 }
 
-.report-image.retail {
-  background-color: #dbeafe;
-  color: #2563eb;
+.report-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.report-details {
-  flex: 1;
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulseAnimation 2s ease-in-out infinite;
 }
 
-.report-status-row {
+.report-status.new {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--civic-blue);
+}
+
+.report-status.new .status-dot {
+  background: var(--civic-blue);
+}
+
+.report-status.in-progress {
+  background: rgba(217, 119, 6, 0.1);
+  color: var(--civic-yellow);
+}
+
+.report-status.in-progress .status-dot {
+  background: var(--civic-yellow);
+}
+
+.report-status.resolved {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--civic-green);
+}
+
+.report-status.resolved .status-dot {
+  background: var(--civic-green);
+}
+
+.report-body {
+  margin-bottom: 20px;
+}
+
+.report-body h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin: 0 0 12px 0;
+}
+
+.report-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.report-location ion-icon {
+  font-size: 16px;
+}
+
+.report-meta {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.status-badge {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --padding-top: 4px;
-  --padding-bottom: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  height: 22px;
-}
-
-.status-badge.yellow {
-  --background: #fef3c7;
-  --color: #b45309;
-}
-
-.status-badge.green {
-  --background: #dcfce7;
-  --color: #16a34a;
+  align-items: center;
+  font-size: 13px;
+  color: var(--on-surface-variant);
 }
 
 .report-time {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.report-details h3 {
-  font-weight: 600;
-  margin-top: 4px;
-  margin-bottom: 4px;
-  font-size: 16px;
-  color: #1f2937;
-}
-
-.report-details p {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
-}
-
-/* Trending Section */
-.trending-section {
-  padding-top: 24px;
-  padding-bottom: 80px;
-}
-
-.trending-section h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 16px;
-}
-
-.trending-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.trending-card {
-  --background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  margin: 0;
-  transition: transform 0.2s ease;
-}
-
-.trending-card:hover {
-  transform: translateY(-2px);
-}
-
-.trending-card ion-card-content {
-  padding: 16px;
-}
-
-.trending-content {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
-.icon-container {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.report-time ion-icon {
+  font-size: 14px;
+}
+
+.report-id {
+  font-weight: 600;
+  color: var(--civic-green);
+}
+
+.report-footer {
+  border-top: 1px solid var(--outline-variant);
+  padding-top: 16px;
+}
+
+.report-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--civic-green);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.report-action:hover {
+  color: var(--ion-color-primary-shade);
+}
+
+.report-action ion-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.report-action:hover ion-icon {
+  transform: translateX(4px);
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 24px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--outline-variant);
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, var(--surface-variant), var(--outline-variant));
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
+  color: var(--on-surface-variant);
+  font-size: 40px;
 }
 
-.icon-container.red {
-  background-color: #fee2e2;
+.empty-state h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin: 0 0 8px 0;
 }
 
-.icon-container.red ion-icon {
-  color: #ef4444;
-}
-
-.icon-container.yellow {
-  background-color: #fef3c7;
-}
-
-.icon-container.yellow ion-icon {
-  color: #f59e0b;
-}
-
-.icon-container.blue {
-  background-color: #e0f2fe;
-}
-
-.icon-container.blue ion-icon {
-  color: #0ea5e9;
-}
-
-.trending-details {
-  flex: 1;
-}
-
-.trending-details h3 {
-  font-weight: 600;
+.empty-state p {
   font-size: 16px;
-  margin-bottom: 4px;
-  color: #1f2937;
+  color: var(--on-surface-variant);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 }
 
-.trending-details p {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0;
-}
-
-.arrow-icon {
-  color: #9ca3af;
-  margin-left: 12px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 480px) {
-  .logo {
-    font-size: 20px;
+/* Mobile Responsiveness for Slider */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0 20px 100px;
   }
   
-  .hero-card h1 {
-    font-size: 20px;
-  }
-  
-  .hero-card p {
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .report-cards,
-  .trending-cards {
-    gap: 12px;
-  }
-}
-
-@media (min-width: 768px) {
-  .report-cards, 
-  .trending-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
+  .hero-section {
+    margin-left: -20px;
+    margin-right: -20px;
   }
   
   .hero-card {
-    max-width: 900px;
-    margin: 0 auto;
+    padding: 52px 24px 32px;
+    min-height: 360px;
+    border-radius: 0 0 20px 20px;
   }
   
-  .action-buttons {
-    max-width: 500px;
+  .hero-card h1 {
+    font-size: 32px;
+  }
+  
+  .hero-card p {
+    font-size: 16px;
+  }
+  
+  .section-header-modern h2 {
+    font-size: 28px;
+  }
+  
+  .how-it-works-section {
+    padding: 48px 20px;
+  }
+  
+  .step-slide {
+    padding: 32px 20px;
+  }
+  
+  .step-icon-large {
+    width: 100px;
+    height: 100px;
+    font-size: 40px;
+    border-radius: 25px;
+  }
+  
+  .step-icon-large::before {
+    border-radius: 25px;
+  }
+  
+  .step-content-modern h3 {
+    font-size: 24px;
+  }
+  
+  .step-content-modern p {
+    font-size: 16px;
+  }
+  
+  .slider-controls {
+    padding: 20px 24px;
+    gap: 16px;
+  }
+  
+  .slider-arrow {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .reports-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .report-card {
+    max-width: 100%;
+  }
+  
+  .view-all-modern {
+    position: static;
+    transform: none;
+    margin-top: 16px;
+  }
+  
+  .section-header-modern {
+    margin-bottom: 32px;
+  }
+  
+  .logo {
+    margin-left: 8px;
+    font-size: 24px;
   }
 }
 
-@media (min-width: 1024px) {
-  .trending-cards {
-    grid-template-columns: repeat(3, 1fr);
+/* Desktop Layout */
+@media (min-width: 769px) {
+  .steps-slider-container {
+    max-width: 900px;
   }
+  
+  .step-slide {
+    padding: 56px 48px;
+  }
+  
+  .step-icon-large {
+    width: 140px;
+    height: 140px;
+    font-size: 56px;
+    border-radius: 35px;
+  }
+  
+  .step-icon-large::before {
+    border-radius: 35px;
+  }
+}
+
+/* Touch Interactions */
+@media (hover: none) {
+  .report-card:hover {
+    transform: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  .report-card:active {
+    transform: scale(0.98);
+  }
+  
+  .slider-arrow:hover:not(:disabled) {
+    background: white;
+    color: #22c55e;
+    border-color: #e2e8f0;
+    transform: none;
+  }
+  
+  .slider-arrow:active:not(:disabled) {
+    background: #22c55e;
+    color: white;
+    border-color: #22c55e;
+    transform: scale(0.95);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .steps-slider {
+    transition: none;
+  }
+  
+  .geo-shape {
+    animation: none;
+  }
+  
+  .status-dot {
+    animation: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .hero-card {
+    border: 2px solid var(--on-surface);
+  }
+  
+  .report-card {
+    border: 2px solid var(--outline);
+  }
+  
+  .section-badge {
+    border: 1px solid var(--on-surface);
+  }
+}
+
+/* Large Screen Optimization */
+@media (min-width: 1024px) {
+  .main-content {
+    padding: 0 60px 120px;
+  }
+  
+  .hero-section {
+    margin-left: -60px;
+    margin-right: -60px;
+    margin-bottom: 64px;
+  }
+  
+  .hero-card {
+    padding: 80px 60px 56px;
+    min-height: 480px;
+    border-radius: 0 0 28px 28px;
+  }
+  
+  .hero-card h1 {
+    font-size: 48px;
+  }
+  
+  .hero-card p {
+    font-size: 20px;
+  }
+  
+  .reports-grid {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 32px;
+  }
+  
+  .how-it-works-section {
+    padding: 80px 60px;
+  }
+  
+  .reports-section {
+    padding: 64px 60px;
+  }
+}
+
+@keyframes pulseAnimation {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>
